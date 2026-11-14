@@ -24,6 +24,7 @@ class SequenceStudyInput(StrictModel):
  min_support:float=Field(default=.1,gt=0,le=1)
  max_length:int=Field(default=3,ge=1,le=4)
  collapse_repeats:bool=True
+ holdout_enabled:bool=False
 class RunInput(StrictModel):
  study_id:str
 class ReviewInput(StrictModel):

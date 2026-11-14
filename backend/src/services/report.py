@@ -14,10 +14,13 @@ def create(data):
 def download(id):
  report=repo.get('reports',id);run=repo.get('runs',report['run_id']);r=run['result']
  if repo.get('reviews',report['review_id'])['status']!='approved':raise HTTPException(403,'复核未通过')
+ holdout=r.get('holdout') or {'enabled':False}
  out=io.StringIO();w=csv.writer(out)
- w.writerow(['report','journeys','unique_paths','collapse_repeats','total_patterns','patterns_truncated','checksum']);w.writerow([safe_cell(report['title']),r['journeys'],r['unique_paths'],r['collapse_repeats'],r['total_patterns'],r['patterns_truncated'],r['checksum']])
- w.writerow([]);w.writerow(['pattern','journey_count','support','converted_support','exited_support','support_difference'])
- for p in r['patterns']:w.writerow(['>'.join(p['pattern']),p['count'],p['support'],p['converted_support'],p['exited_support'],p['support_difference']])
+ w.writerow(['report','journeys','unique_paths','collapse_repeats','holdout_enabled','holdout_percent','holdout_seed','discovery_journeys','heldout_journeys','discovery_converted_journeys','discovery_exited_journeys','heldout_converted_journeys','heldout_exited_journeys','patterns_recomputed','total_patterns','patterns_truncated','checksum'])
+ w.writerow([safe_cell(report['title']),r['journeys'],r['unique_paths'],r['collapse_repeats'],holdout['enabled'],holdout.get('percent'),holdout.get('seed'),holdout.get('discovery_journeys'),holdout.get('heldout_journeys'),holdout.get('discovery_group_sizes',{}).get('converted'),holdout.get('discovery_group_sizes',{}).get('exited'),holdout.get('heldout_group_sizes',{}).get('converted'),holdout.get('heldout_group_sizes',{}).get('exited'),holdout.get('patterns_recomputed'),r['total_patterns'],r['patterns_truncated'],r['checksum']])
+ w.writerow([]);w.writerow(['pattern','journey_count','support','converted_support','exited_support','support_difference','heldout_journey_count','heldout_support','heldout_converted_support','heldout_exited_support','heldout_support_difference'])
+ for p in r['patterns']:
+  w.writerow(['>'.join(p['pattern']),p['count'],p['support'],p['converted_support'],p['exited_support'],p['support_difference'],p.get('heldout_count'),p.get('heldout_support'),p.get('heldout_converted_support'),p.get('heldout_exited_support'),p.get('heldout_support_difference')])
  w.writerow([]);w.writerow(['group','medoid','journeys','weighted_total_distance','mean_distance'])
  for group,m in r['medoids'].items():
   if m:w.writerow([group,'>'.join(m['path']),m['journeys'],m['weighted_total_distance'],m['mean_distance']])
